@@ -90,12 +90,29 @@ export default function AdminPage() {
       )
     }
 
+    const handleEventDeleted = (payload: any) => {
+      const eventId = payload.eventId
+
+      // 이미 처리된 이벤트인지 확인 (중복 방지)
+      if (processedEventIds.current.has(`deleted-${eventId}`)) {
+        return
+      }
+
+      // 새로운 이벤트면 처리 목록에 추가
+      processedEventIds.current.add(`deleted-${eventId}`)
+
+      // UI에서 이벤트 제거 (다른 클라이언트의 삭제 반영)
+      setRecentEvents(prev => prev.filter(event => event.id !== eventId))
+    }
+
     socket.on('server:dock_event_created', handleEventCreated)
     socket.on('server:event_acked', handleEventAcked)
+    socket.on('server:event_deleted', handleEventDeleted)
 
     return () => {
       socket.off('server:dock_event_created', handleEventCreated)
       socket.off('server:event_acked', handleEventAcked)
+      socket.off('server:event_deleted', handleEventDeleted)
     }
   }, [socket])
 
@@ -154,6 +171,23 @@ export default function AdminPage() {
     setRecentEvents(prev => [tempEvent, ...prev.slice(0, 19)])
   }
 
+  const handleLogDelete = (eventId: string) => {
+    if (!socket || !isConnected) {
+      alert('서버에 연결되지 않았습니다.')
+      return
+    }
+
+    // 서버에 삭제 요청 전송
+    const clientRequestId = `${Date.now()}-${Math.random()}`
+    socket.emit('client:delete_event', {
+      eventId,
+      clientRequestId
+    })
+
+    // 즉시 UI에서 제거 (사용자 경험 향상)
+    setRecentEvents(prev => prev.filter(event => event.id !== eventId))
+  }
+
   const generateDockButtons = () => {
     const buttons = []
     const excludedDocks = EXCLUDED_DOCKS[selectedDockSet.id] || []
@@ -168,7 +202,7 @@ export default function AdminPage() {
         <button
           key={i}
           onClick={() => handleDockClick(i)}
-          className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-6 px-4 rounded-lg text-base transition-colors disabled:opacity-50 min-h-[60px] flex items-center justify-center"
+          className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-5 px-4 rounded-lg text-base transition-colors disabled:opacity-50 min-h-[50px] flex items-center justify-center"
           disabled={!isConnected}
         >
           도크 {i}
@@ -251,7 +285,11 @@ export default function AdminPage() {
               ) : (
                 <div className="divide-y divide-gray-200">
                   {recentEvents.map((event) => (
-                    <div key={event.id} className="p-3 flex items-center justify-between">
+                    <div
+                      key={event.id}
+                      className="p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                      onClick={() => handleLogDelete(event.id)}
+                    >
                       <div className="flex items-center space-x-2 flex-1 min-w-0">
                         {event.status === 'acked' ? (
                           <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />

@@ -72,12 +72,29 @@ export default function SignalPage() {
       )
     }
 
+    const handleEventDeleted = (payload: any) => {
+      const eventId = payload.eventId
+
+      // 이미 처리된 이벤트인지 확인 (중복 방지)
+      if (processedEventIds.current.has(`deleted-${eventId}`)) {
+        return
+      }
+
+      // 새로운 이벤트면 처리 목록에 추가
+      processedEventIds.current.add(`deleted-${eventId}`)
+
+      // UI에서 이벤트 제거
+      setEvents(prev => prev.filter(event => event.id !== eventId))
+    }
+
     socket.on('server:dock_event_created', handleEventCreated)
     socket.on('server:event_acked', handleEventAcked)
+    socket.on('server:event_deleted', handleEventDeleted)
 
     return () => {
       socket.off('server:dock_event_created', handleEventCreated)
       socket.off('server:event_acked', handleEventAcked)
+      socket.off('server:event_deleted', handleEventDeleted)
     }
   }, [socket])
 

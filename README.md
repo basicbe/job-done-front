@@ -102,15 +102,15 @@ src/
 
 ## 최근 수정사항
 
-### v1.0.14 - Vercel SPA 배포 설정
-**문제**: Vercel 배포 시 /admin, /signal 경로에서 404 NOT_FOUND
-**해결**: vercel.json으로 SPA 라우팅 설정
-**영향**: 모든 경로가 index.html로 리다이렉트되어 React Router 정상 작동
+### v1.0.16 - 로그 삭제 실시간 동기화
+**문제**: 로그 삭제 시 DB 반영 안되고 신호수 페이지 동기화 부족
+**해결**: Socket.IO 이벤트로 DB 삭제 및 실시간 동기화 구현
+**영향**: 모든 클라이언트에서 로그 삭제가 실시간으로 반영
 
 **기술적 세부사항**:
-- vercel.json 생성으로 rewrites 규칙 설정
-- 모든 요청을 index.html로 리다이렉트
-- 브라우저 직접 접근 시 라우팅 문제 해결
+- client:delete_event 이벤트로 서버에 삭제 요청
+- server:event_deleted 이벤트로 모든 클라이언트에 삭제 브로드캐스트
+- AdminPage와 SignalPage 모두 삭제 이벤트 처리
 
 ### v1.0.9 - TypeScript 프로젝트 참조 에러 해결
 **문제**: tsconfig.json 참조에서 TS6310 에러 발생
