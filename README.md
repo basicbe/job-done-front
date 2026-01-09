@@ -102,15 +102,15 @@ src/
 
 ## 최근 수정사항
 
-### v1.0.13 - 특정 도크 버튼 제외 기능
-**문제**: 1번 대형 39번, 2번 대형 27번 도크 버튼이 불필요
-**해결**: 도크 버튼 생성 시 특정 번호 제외 로직 구현
-**영향**: 필요한 도크 버튼만 표시
+### v1.0.14 - Vercel SPA 배포 설정
+**문제**: Vercel 배포 시 /admin, /signal 경로에서 404 NOT_FOUND
+**해결**: vercel.json으로 SPA 라우팅 설정
+**영향**: 모든 경로가 index.html로 리다이렉트되어 React Router 정상 작동
 
 **기술적 세부사항**:
-- EXCLUDED_DOCKS 매핑으로 대형별 제외 번호 정의
-- generateDockButtons 함수에서 제외 번호 필터링
-- 동적 설정으로 추후 다른 번호도 쉽게 제외 가능
+- vercel.json 생성으로 rewrites 규칙 설정
+- 모든 요청을 index.html로 리다이렉트
+- 브라우저 직접 접근 시 라우팅 문제 해결
 
 ### v1.0.9 - TypeScript 프로젝트 참조 에러 해결
 **문제**: tsconfig.json 참조에서 TS6310 에러 발생
